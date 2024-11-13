@@ -1,5 +1,13 @@
-import streamlit as st
-import pandas as pd
+# Title: Extract Genes from URLs Script
+# Date: June 5th, 2024  
+# Author: Hank Helmers, Fungal Genomics & Comp. Biology REU Participant
+#
+# Description:
+# * Input BLAST output csv, including the URLs in the first column
+# * Opens each URL, extracts the gene name and sequence from the website
+# * Saves them all into an outputted CSV
+# * If an error occurs, it is also saved in the CSV with name "Error"
+#   the URLs are included in the output, so each error can be inspected. 
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -7,38 +15,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import pandas as pd
 
 import SequencePacking
-
-
-# Title and info
-st.title("Data Explorer :crystal_ball:")
-# st.info("The DataExplorer is an interactive web application designed to empower users to perform Exploratory Data Analysis (EDA) with ease and efficiency. With this intuitive tool, users can upload their datasets in CSV format, and the application will swiftly process and visualize the data to gain valuable insights.")
-
-
-# 1. Loading the data
-def load_data():
-    uploaded_file = st.file_uploader("1. Upload a CSV file", type=["csv","exl"])
-
-    if uploaded_file is not None:
-        try:
-            # Try reading the CSV file
-            data = pd.read_csv(uploaded_file)
-            return data
-        except Exception as e:
-            st.error(f"Error reading the file: {e}")
-            return None
-        
-data = load_data()
-
-
-# 2. Data Verification
-if data is not None:
-    st.header("2. Data loaded successfully! :sunglasses:")
-    st.dataframe(data)
-    st.write("We can now go through and collect all CDS sequences for each BLAST result!")
-
-## SCRAPING -------------------------------------------------------------------------------------------
 
 # Get URLs as Array from CSV database
 # 
@@ -95,11 +74,11 @@ def startWebDriver():
     options.add_argument("--disable-software-rasterizer")  # Optional, to further disable software rendering
     
     try:
-        st.write("Starting Automator...")
+        print("Starting Automator...")
         driver = webdriver.Chrome(options=options)
-        st.write("Automator started successfully.")
+        print("Automator started successfully.")
     except Exception as e:
-        st.write(f"Error starting Automator: {e}")
+        print(f"Error starting Automator: {e}")
         raise e
 
 def getGeneName():
@@ -141,59 +120,3 @@ def getCDS():
     )
     sequence = element.text
     return sequence.split("\n")[1]
-
-
-
-# 3. Do Operation
-    #for i in range(len(urls)): # length of URLS
-if data is not None:
-    urls = getURLsFromDatabase(data)
-
-    startWebDriver()
-    
-    sequence_objs = []
-    sequence_errors = []
-
-    organism = "Wheat"
-    description = "CPS4"  
-    dataset = "Triticum aestivum cv. Chinese Spring v2.1"
-    #getGeneData(urls[2], description, organism, dataset)
-
-# PARSING THE DATA
-# Extract data from the sequence_obj array
-#     data = [
-#         {
-#             'URL': gene.url,
-#             'Name': gene.name,
-#             'Description': gene.description,
-#             'Organism': gene.organism,
-#             'Dataset': gene.dataset,
-#             'Sequence': gene.sequence
-#         }
-#         for gene in sequence_obj
-#     ]
-
-#     # Print list of arrays at end
-#     print("Final errors noted: ")
-#     for error in gene_errors:
-#         print("Error at " + str(error))
-
-#     # Create a DataFrame from the data
-#     df = pd.DataFrame(data)
-
-#     # Save the DataFrame to a CSV file
-#     df.to_csv('output.csv', index=False)
-
-#     print("CSV file 'output.csv' has been created successfully.")
-
-# progress_text = "Operation in progress. Please wait."
-# my_bar = st.progress(0, text=progress_text)
-
-# for percent_complete in range(100):
-#     time.sleep(0.01)
-#     my_bar.progress(percent_complete + 1, text=progress_text)
-# time.sleep(1)
-# my_bar.empty()
-
-# st.button("Rerun")
-
